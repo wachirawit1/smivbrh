@@ -19,6 +19,9 @@ RUN composer install --no-dev --optimize-autoloader
 EXPOSE 10000
 
 CMD sleep 20 && \
-    php artisan cache:clear && \
+    php artisan config:clear && \
+    php artisan cache:table && \
+    php artisan migrate --force && \
     php artisan migrate --seed --force && \
     php artisan serve --host=0.0.0.0 --port=10000
+
