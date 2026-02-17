@@ -20,8 +20,6 @@ EXPOSE 10000
 
 CMD sleep 20 && \
     php artisan config:clear && \
-    php artisan cache:table && \
     php artisan migrate --force && \
-    php artisan migrate --seed --force && \
+    php artisan db:seed --force && \
     php artisan serve --host=0.0.0.0 --port=10000
-
