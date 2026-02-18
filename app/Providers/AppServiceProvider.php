@@ -19,6 +19,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS in production (for Render.com)
+        if (app()->environment('production')) {
+            \URL::forceScheme('https');
+        }
+
         \Illuminate\Support\Facades\View::composer('layout', function ($view) {
             if (\Illuminate\Support\Facades\Auth::check()) {
                 $user = \Illuminate\Support\Facades\Auth::user();

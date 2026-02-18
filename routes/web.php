@@ -46,3 +46,9 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::post('/admin/users/{user}/approve', [UserManagementController::class, 'approve'])->name('admin.users.approve');
     Route::delete('/admin/users/{user}', [UserManagementController::class, 'destroy'])->name('admin.users.destroy');
 });
+
+Route::get('/run-seed', function () {
+    Artisan::call('db:seed', ['--force' => true]);
+    return 'Seed done';
+});
+
