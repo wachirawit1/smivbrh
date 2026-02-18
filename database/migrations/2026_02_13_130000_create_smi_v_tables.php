@@ -21,8 +21,6 @@ return new class extends Migration
             $table->string('severity')->default('green'); // green, yellow, orange, red, purple
             $table->string('relative_assessment')->nullable();
             $table->text('details')->nullable();
-            $table->date('last_follow_up')->nullable();
-            $table->date('next_follow_up')->nullable();
             $table->string('status')->default('รอติดตาม'); // จำหน่าย, ติดตามปกติ
             $table->string('oas_score')->nullable();
             $table->string('prefix')->nullable();
