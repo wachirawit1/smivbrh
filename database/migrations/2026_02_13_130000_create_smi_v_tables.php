@@ -34,6 +34,8 @@ return new class extends Migration
             $table->json('chronic_disease')->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
+            $table->date('last_follow_up')->nullable();
+            $table->date('next_follow_up')->nullable();
 
             $table->timestamps();
         });
