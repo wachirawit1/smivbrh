@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('status')->default('รอติดตาม'); // จำหน่าย, ติดตามปกติ
             $table->string('prefix')->nullable();
             $table->string('smiv_group')->nullable();
+            $table->string('oas_score')->nullable();
             $table->string('address')->nullable();
             $table->string('moo')->nullable();
             $table->string('tambon')->nullable();
