@@ -11,29 +11,34 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin user according to requirement
-        User::updateOrCreate([
-            'prefix' => 'นาย',
-            'fname' => 'System',
-            'lname' => 'Admin',
-            'username' => 'smivbrh',
-            'area' => 'เมืองบุรีรัมย์',
-            'amphoe' => 'เมืองบุรีรัมย์',
-            'role' => 'admin',
-            'is_approved' => true,
-            'password' => Hash::make('smivbrh'),
-        ]);
+        User::updateOrCreate(
+            ['username' => 'smivbrh'], // 🔍 เงื่อนไขค้นหา
+            [
+                'prefix' => 'นาย',
+                'fname' => 'System',
+                'lname' => 'Admin',
+                'area' => 'เมืองบุรีรัมย์',
+                'amphoe' => 'เมืองบุรีรัมย์',
+                'role' => 'admin',
+                'is_approved' => true,
+                'password' => Hash::make('smivbrh'),
+            ]
+        );
+
 
         // Sample User
-        User::updateOrCreate([
-            'prefix' => 'นางสาว',
-            'fname' => 'Test',
-            'lname' => 'Medical Staff',
-            'username' => 'staff1',
-            'area' => 'เมืองบุรีรัมย์',
-            'amphoe' => 'เมืองบุรีรัมย์',
-            'role' => 'user',
-            'is_approved' => true,
-            'password' => Hash::make('password'),
-        ]);
+        User::updateOrCreate(
+            ['username' => 'staff1'],
+            [
+                'prefix' => 'นางสาว',
+                'fname' => 'Test',
+                'lname' => 'Medical Staff',
+                'area' => 'เมืองบุรีรัมย์',
+                'amphoe' => 'เมืองบุรีรัมย์',
+                'role' => 'user',
+                'is_approved' => true,
+                'password' => Hash::make('password'),
+            ]
+        );
     }
 }
