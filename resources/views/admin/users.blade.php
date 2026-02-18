@@ -11,7 +11,6 @@
                 <thead class="table-light">
                     <tr>
                         <th>ชื่อ-นามสกุล</th>
-                        <th>เบอร์โทร</th>
                         <th>พื้นที่รับผิดชอบ</th>
                         <th>สถานะ</th>
                         <th class="text-center">การจัดการ</th>
@@ -21,10 +20,9 @@
                     @foreach ($users as $user)
                         <tr>
                             <td>
-                                <div class="fw-bold">{{ $user->prefix }}{{ $user->name }}</div>
-                                <small class="text-muted">ID: {{ $user->username ?: $user->email }}</small>
+                                <div class="fw-bold">{{ $user->prefix }}{{ $user->fname }} {{ $user->lname }}</div>
+                                <small class="text-muted">Username: {{ $user->username ?: 'N/A' }}</small>
                             </td>
-                            <td>{{ $user->phone }}</td>
                             <td><span class="badge bg-light text-primary border">{{ $user->area }}</span></td>
                             <td>
                                 @if ($user->is_approved)
