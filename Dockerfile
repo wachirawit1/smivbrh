@@ -16,7 +16,6 @@ COPY . .
 # ติดตั้ง package
 RUN composer install --no-dev --optimize-autoloader
 
-EXPOSE 10000
 
 CMD sh -c "sleep 10 && \
     php artisan migrate --force && \
