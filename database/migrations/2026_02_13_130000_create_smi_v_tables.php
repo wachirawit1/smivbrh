@@ -24,9 +24,9 @@ return new class extends Migration
             $table->date('last_follow_up')->nullable();
             $table->date('next_follow_up')->nullable();
             $table->string('status')->default('รอติดตาม'); // จำหน่าย, ติดตามปกติ
+            $table->string('oas_score')->nullable();
             $table->string('prefix')->nullable();
             $table->string('smiv_group')->nullable();
-            $table->string('oas_score')->nullable();
             $table->string('address')->nullable();
             $table->string('moo')->nullable();
             $table->string('tambon')->nullable();
