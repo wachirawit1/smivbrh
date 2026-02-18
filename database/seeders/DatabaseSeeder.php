@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin user according to requirement
-        User::create([
+        User::updateOrCreate([
             'prefix' => 'นาย',
             'fname' => 'System',
             'lname' => 'Admin',
@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Sample User
-        User::create([
+        User::updateOrCreate([
             'prefix' => 'นางสาว',
             'fname' => 'Test',
             'lname' => 'Medical Staff',
