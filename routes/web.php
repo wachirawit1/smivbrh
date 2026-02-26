@@ -52,3 +52,7 @@ Route::get('/run-seed', function () {
     return 'Seed done';
 });
 
+// Session Keep-Alive Route
+Route::get('/session/keep-alive', function () {
+    return response()->json(['status' => 'success', 'timestamp' => now()->toDateTimeString()]);
+})->middleware('auth')->name('session.keep-alive');

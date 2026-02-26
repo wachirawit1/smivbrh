@@ -337,6 +337,97 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Session Timeout Warning Modal -->
+    <div class="modal fade" id="sessionTimeoutModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-3d border-0 shadow-lg">
+                <div class="modal-header modal-header-custom border-0 p-4">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-hourglass-half me-2"></i>เซสชันกำลังจะหมดอายุ</h5>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="fs-5 mb-1">คุณไม่ได้ใช้งานระบบมาสักพักแล้ว</p>
+                    <p class="text-muted mb-4">ระบบจะออกจากระบบอัตโนมัติในอีก <span id="sessionTimerCountdown" class="fw-bold text-danger fs-4">--</span> วินาที</p>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow" onclick="extendSession()">
+                            <i class="fas fa-sync-alt me-2"></i> ใช้งานต่อ (Extend Session)
+                        </button>
+                        <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form-session').submit();" class="btn btn-outline-secondary rounded-pill fw-bold py-2 mt-1">
+                            ออกจากระบบเดี๋ยวนี้
+                        </a>
+                        <form id="logout-form-session" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        @auth
+            // Session Lifetime from config (minutes to milliseconds)
+            const sessionLifetime = {{ config('session.lifetime') }} * 60 * 1000;
+            const warningThreshold = 2 * 60 * 1000; // Warn 2 minutes before expiry
+            let sessionTimeoutTimer;
+            let countdownInterval;
+            let warningModal = new bootstrap.Modal(document.getElementById('sessionTimeoutModal'));
+
+            function startSessionTimer() {
+                // Clear existing timers
+                clearTimeout(sessionTimeoutTimer);
+                clearInterval(countdownInterval);
+
+                // Set timer for the warning threshold
+                sessionTimeoutTimer = setTimeout(() => {
+                    showSessionWarning();
+                }, sessionLifetime - warningThreshold);
+            }
+
+            function showSessionWarning() {
+                warningModal.show();
+                let timeLeft = Math.floor(warningThreshold / 1000);
+                const timerDisplay = document.getElementById('sessionTimerCountdown');
+                
+                timerDisplay.innerText = timeLeft;
+
+                countdownInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.innerText = timeLeft;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        window.location.href = "{{ route('login') }}?expired=1";
+                    }
+                }, 1000);
+            }
+
+            function extendSession() {
+                fetch("{{ route('session.keep-alive') }}")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            warningModal.hide();
+                            startSessionTimer(); // Restart the timer
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error extending session:', error);
+                        window.location.reload(); // Fallback
+                    });
+            }
+
+            // Start the timer on page load
+            document.addEventListener('DOMContentLoaded', startSessionTimer);
+
+            // Optional: Reset timer on mouse move or click to be more user-friendly
+            // let debounceTimer;
+            // document.addEventListener('mousemove', () => {
+            //     clearTimeout(debounceTimer);
+            //     debounceTimer = setTimeout(extendSession, 10000); // Extend every 10s of activity
+            // });
+        @endauth
+    </script>
     @stack('scripts')
 </body>
 
