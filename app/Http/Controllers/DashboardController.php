@@ -26,17 +26,14 @@ class DashboardController extends Controller
             ->pluck('total', 'oas_score')
             ->toArray();
 
-        // Handle Status: เกินกำหนดนัด (Overdue)
         $overdueCount = Patient::where('status', 'เกินกำหนดนัด')
             ->when($areaFilter, fn($q) => $q->where('amphoe', $areaFilter))
             ->count();
-        $stats['purple'] = $overdueCount;
 
-        // Handle Status: มาตามนัด (Scheduled/Normal Tracking)
+        // Handle Status: มาตามนัด (Arrived)
         $scheduledCount = Patient::where('status', 'ติดตามปกติ')
             ->when($areaFilter, fn($q) => $q->where('amphoe', $areaFilter))
             ->count();
-        $stats['scheduled'] = $scheduledCount;
 
         // SMI-V Stats for Bar Chart (Need to iterate constants since JSON)
         $smivTypes = SMIConstants::SMIV_TYPES;
@@ -91,7 +88,9 @@ class DashboardController extends Controller
             'smivNames',
             'statsByArea',
             'improvement3m',
-            'improvement6m'
+            'improvement6m',
+            'overdueCount',
+            'scheduledCount'
         ));
     }
 

@@ -48,8 +48,12 @@
                                     <span class="fw-bold">{{ $patient->age }} ปี / {{ $patient->gender }}</span>
                                 </div>
                                 <div class="list-group-item d-flex justify-content-between px-0">
-                                    <span class="text-muted"><i class="fas fa-phone-alt me-2"></i>เบอร์โทร</span>
+                                    <span class="text-muted"><i class="fas fa-phone-alt me-2"></i>เบอร์คนไข้</span>
                                     <span class="fw-bold">{{ $patient->phone ?: '-' }}</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between px-0">
+                                    <span class="text-muted"><i class="fas fa-users me-2"></i>เบอร์ญาติ</span>
+                                    <span class="fw-bold">{{ $patient->relative_phone ?: '-' }}</span>
                                 </div>
                                 <div class="list-group-item d-flex justify-content-between px-0">
                                     <span class="text-muted"><i class="fas fa-hospital me-2"></i>พื้นที่ (Area)</span>
@@ -111,31 +115,29 @@
 
                 <!-- Content Area: Clinical Score & History -->
                 <div class="col-lg-8">
-                    <!-- Evaluation Radar-like bars -->
+                    <!-- Evaluation: Symptoms Summary -->
                     <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
                         <div class="card-header bg-white py-3 border-0">
-                            <h5 class="m-0 fw-bold text-dark"><i class="fas fa-chart-line me-2"></i> สรุปผลการประเมิน 6 ด้าน
-                                (ล่าสุด)</h5>
+                            <h5 class="m-0 fw-bold text-dark"><i class="fas fa-clipboard-check me-2"></i> สรุปอาการปัจจุบัน 6 ด้าน (ล่าสุด)</h5>
                         </div>
                         <div class="card-body p-4 pt-0">
-                            <div class="row g-4">
-                                @foreach ([['icon' => 'brain', 'label' => 'อาการทางจิต', 'key' => 'symp_mind', 'color' => 'primary'], ['icon' => 'pills', 'label' => 'การรับประทานยา', 'key' => 'symp_med', 'color' => 'success'], ['icon' => 'walking', 'label' => 'กิจวัตรประจำวัน', 'key' => 'symp_care', 'color' => 'info'], ['icon' => 'briefcase', 'label' => 'การทำงาน/เรียน', 'key' => 'symp_job', 'color' => 'warning'], ['icon' => 'users', 'label' => 'สัมพันธภาพ', 'key' => 'symp_env', 'color' => 'secondary'], ['icon' => 'capsules', 'label' => 'ไม่ใช้สารเสพติด', 'key' => 'symp_drug', 'color' => 'danger']] as $eval)
-                                    @php
-                                        $score = $patient->{$eval['key']} ?? 0;
-                                        $percent = $score * 20;
-                                    @endphp
-                                    <div class="col-md-6">
-                                        <div class="d-flex justify-content-between mb-1 align-items-center">
-                                            <span class="small fw-bold"><i
-                                                    class="fas fa-{{ $eval['icon'] }} me-2 text-{{ $eval['color'] }}"></i>{{ $eval['label'] }}</span>
-                                            <span
-                                                class="badge bg-{{ $eval['color'] }}-subtle text-{{ $eval['color'] }}">{{ $score }}/5</span>
-                                        </div>
-                                        <div class="progress"
-                                            style="height: 10px; border-radius: 5px; background-color: #eee;">
-                                            <div class="progress-bar bg-{{ $eval['color'] }}" role="progressbar"
-                                                style="width: {{ $percent }}%" aria-valuenow="{{ $score }}"
-                                                aria-valuemin="0" aria-valuemax="5"></div>
+                            <div class="row g-3">
+                                @foreach ([
+                                    ['icon' => 'brain', 'label' => '1. ด้านอาการทางจิต', 'key' => 'symp_mind', 'color' => 'primary'],
+                                    ['icon' => 'pills', 'label' => '2. ด้านการกินยา', 'key' => 'symp_med', 'color' => 'success'],
+                                    ['icon' => 'walking', 'label' => '3. ด้านผู้ดูแล/ญาติ', 'key' => 'symp_care', 'color' => 'info'],
+                                    ['icon' => 'briefcase', 'label' => '4. ด้านการประกอบอาชีพ', 'key' => 'symp_job', 'color' => 'warning'],
+                                    ['icon' => 'users', 'label' => '5. ด้านสิ่งแวดล้อม', 'key' => 'symp_env', 'color' => 'secondary'],
+                                    ['icon' => 'capsules', 'label' => '6. ด้านการใช้สารเสพติด', 'key' => 'symp_drug', 'color' => 'danger']
+                                ] as $eval)
+                                    <div class="col-md-6 mb-2">
+                                        <div class="p-3 rounded bg-light border-start border-{{ $eval['color'] }} border-4 h-100">
+                                            <label class="small text-muted d-block mb-1">
+                                                <i class="fas fa-{{ $eval['icon'] }} me-1 text-{{ $eval['color'] }}"></i> {{ $eval['label'] }}
+                                            </label>
+                                            <span class="fw-bold small text-{{ $eval['color'] }}">
+                                                {{ $patient->{$eval['key']} ?: 'ไม่ระบุ' }}
+                                            </span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -212,12 +214,22 @@
                                             {{ $item->staff_name }}</div>
                                         <div class="col-md-8 text-truncate text-muted"><i
                                                 class="fas fa-comment-dots me-1"></i> {{ $item->details ?: '-' }}</div>
-                                        <div class="col-12">
-                                            <div class="d-flex gap-2 mt-1">
-                                                @foreach (['symp_mind', 'symp_med', 'symp_care', 'symp_job', 'symp_env', 'symp_drug'] as $sk)
-                                                    <div class="rounded-pill px-2 border bg-light text-muted"
-                                                        style="font-size: 0.7rem;">S{{ $loop->iteration }}:
-                                                        {{ $item->{$sk} }}</div>
+                                        <div class="col-12 mt-2">
+                                            <div class="row g-1">
+                                                @foreach ([
+                                                    'symp_mind' => 'จิต', 
+                                                    'symp_med' => 'ยา', 
+                                                    'symp_care' => 'ญาติ', 
+                                                    'symp_job' => 'อาชีพ', 
+                                                    'symp_env' => 'แวดล้อม', 
+                                                    'symp_drug' => 'สารเสพติด'
+                                                ] as $sk => $sl)
+                                                    <div class="col-md-4">
+                                                        <div class="rounded bg-light px-2 py-1 border shadow-xs" style="font-size: 0.75rem;">
+                                                            <span class="text-muted">{{ $sl }}:</span> 
+                                                            <span class="fw-bold">{{ $item->{$sk} }}</span>
+                                                        </div>
+                                                    </div>
                                                 @endforeach
                                             </div>
                                         </div>

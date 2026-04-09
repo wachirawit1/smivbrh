@@ -58,11 +58,42 @@ class PatientController extends Controller
         $request->validate([
             'first_name' => 'required',
             'last_name' => 'required',
-            'cid' => 'required|digits:13|unique:patients',
+            'cid' => [
+                'required',
+                'digits:13',
+                'unique:patients',
+                function ($attribute, $value, $fail) {
+                    if (strlen($value) != 13) return $fail('สิทธิ์การกรอกเลขบัตรประชาชนต้องมี 13 หลัก');
+                    $sum = 0;
+                    for ($i = 0; $i < 12; $i++) {
+                        $sum += (int)($value[$i]) * (13 - $i);
+                    }
+                    if ((11 - ($sum % 11)) % 10 != (int)($value[12])) {
+                        $fail('เลขบัตรประชาชนไม่ถูกต้องตามหลักการตรวจสอบ');
+                    }
+                },
+            ],
+            'phone' => 'nullable|regex:/^0[0-9]{9}$/',
+            'relative_phone' => 'nullable|regex:/^0[0-9]{9}$/',
             'area' => 'required',
+        ], [
+            'cid.digits' => 'เลขบัตรประชาชนต้องมี 13 หลัก',
+            'cid.unique' => 'เลขบัตรประชาชนนี้มีในระบบแล้ว',
+            'phone.regex' => 'เบอร์โทรศัพท์ต้องมี 10 หลัก และขึ้นต้นด้วย 0',
+            'relative_phone.regex' => 'เบอร์โทรศัพท์ญาติต้องมี 10 หลัก และขึ้นต้นด้วย 0',
         ]);
 
-        $data = $request->except(['birth_day', 'birth_month', 'birth_year', 'visit_day', 'visit_month', 'visit_year', 'next_day', 'next_month', 'next_year']);
+        $data = $request->except(['birth_day', 'birth_month', 'birth_year', 'visit_day', 'visit_month', 'visit_year', 'next_day', 'next_month', 'next_year', 'substance_other']);
+
+        // Process "Other" Substances
+        if ($request->filled('substances') && is_array($request->substances)) {
+            $subs = $request->substances;
+            if (in_array('อื่นๆ', $subs) && $request->filled('substance_other')) {
+                $subs = array_filter($subs, fn($v) => $v !== 'อื่นๆ');
+                $subs[] = 'อื่นๆ: ' . trim($request->substance_other);
+            }
+            $data['substances'] = array_values($subs);
+        }
 
         // Handle Birth Date (Thai Year - 543)
         if ($request->filled(['birth_day', 'birth_month', 'birth_year'])) {
@@ -104,7 +135,44 @@ class PatientController extends Controller
 
     public function update(Request $request, Patient $patient)
     {
-        $data = $request->except(['birth_day', 'birth_month', 'birth_year', 'visit_day', 'visit_month', 'visit_year', 'next_day', 'next_month', 'next_year']);
+        $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'cid' => [
+                'required',
+                'digits:13',
+                'unique:patients,cid,' . $patient->id,
+                function ($attribute, $value, $fail) {
+                    $sum = 0;
+                    for ($i = 0; $i < 12; $i++) {
+                        $sum += (int)($value[$i]) * (13 - $i);
+                    }
+                    if ((11 - ($sum % 11)) % 10 != (int)($value[12])) {
+                        $fail('เลขบัตรประชาชนไม่ถูกต้องตามหลักการตรวจสอบ');
+                    }
+                },
+            ],
+            'phone' => 'nullable|regex:/^0[0-9]{9}$/',
+            'relative_phone' => 'nullable|regex:/^0[0-9]{9}$/',
+            'area' => 'required',
+        ], [
+            'cid.digits' => 'เลขบัตรประชาชนต้องมี 13 หลัก',
+            'cid.unique' => 'เลขบัตรประชาชนนี้มีในระบบแล้ว',
+            'phone.regex' => 'เบอร์โทรศัพท์ต้องมี 10 หลัก และขึ้นต้นด้วย 0',
+            'relative_phone.regex' => 'เบอร์โทรศัพท์ญาติต้องมี 10 หลัก และขึ้นต้นด้วย 0',
+        ]);
+
+        $data = $request->except(['birth_day', 'birth_month', 'birth_year', 'visit_day', 'visit_month', 'visit_year', 'next_day', 'next_month', 'next_year', 'substance_other']);
+
+        // Process "Other" Substances
+        if ($request->filled('substances') && is_array($request->substances)) {
+            $subs = $request->substances;
+            if (in_array('อื่นๆ', $subs) && $request->filled('substance_other')) {
+                $subs = array_filter($subs, fn($v) => $v !== 'อื่นๆ');
+                $subs[] = 'อื่นๆ: ' . trim($request->substance_other);
+            }
+            $data['substances'] = array_values($subs);
+        }
 
         if ($request->filled(['birth_day', 'birth_month', 'birth_year'])) {
             $year = (int)$request->birth_year - 543;

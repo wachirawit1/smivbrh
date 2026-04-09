@@ -26,6 +26,7 @@ class FollowUp extends Model
         'visit_date',
         'appointment_plan',
         'next_appointment_date',
+        'details',
         'staff_name'
     ];
 

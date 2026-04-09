@@ -11,19 +11,24 @@ return new class extends Migration
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
             $table->string('prefix')->nullable();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('cid', 13)->nullable()->unique();
-            $table->date('birth_date')->nullable();
-            $table->integer('age')->nullable();
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
             $table->string('gender')->nullable();
+            $table->string('cid')->nullable()->unique();
+            $table->integer('age')->nullable();
+            $table->date('birth_date')->nullable();
             $table->string('hn')->nullable()->unique()->index();
             $table->string('phone')->nullable();
+            $table->string('relative_phone')->nullable();
             $table->string('address')->nullable();
             $table->string('moo')->nullable();
             $table->string('tambon')->nullable();
             $table->string('amphoe')->nullable();
-            $table->string('area');
+            $table->string('area')->nullable();
+            $table->string('status')->nullable();
+            $table->string('visit_status')->nullable();
+            $table->date('last_visit_date')->nullable();
+            $table->date('next_appointment_date')->nullable();
             $table->string('diagnosis')->nullable();
             $table->json('smiv_group')->nullable();
             $table->string('oas_score')->nullable();
@@ -34,9 +39,6 @@ return new class extends Migration
             $table->string('symp_env')->nullable();
             $table->string('symp_drug')->nullable();
             $table->json('substances')->nullable();
-            $table->date('last_visit_date')->nullable();
-            $table->date('next_appointment_date')->nullable();
-            $table->string('status')->default('ติดตามปกติ');
             $table->timestamps();
         });
 

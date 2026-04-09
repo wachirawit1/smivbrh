@@ -23,7 +23,9 @@ Route::get('/repair-db', function () {
 })->name('repair.db');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/map', [DashboardController::class, 'map'])->name('map');
+Route::get('/map', function () {
+    return redirect()->route('dashboard');
+})->name('map');
 
 // Auth
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

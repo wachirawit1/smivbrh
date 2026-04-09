@@ -20,6 +20,7 @@ class Patient extends Model
         'age',
         'gender',
         'phone',
+        'relative_phone',
         'address',
         'tambon',
         'amphoe',

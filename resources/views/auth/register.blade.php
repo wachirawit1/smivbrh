@@ -99,8 +99,8 @@
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Username</label>
-                                <input type="text" name="username" class="form-control border-success-subtle shadow-sm"
-                                    required placeholder="smivbrh" value="{{ old('username') }}">
+                                <input type="text" name="username" id="username" class="form-control border-success-subtle bg-light shadow-sm"
+                                    required readonly placeholder="ดึงจากชื่อ" value="{{ old('username') }}">
                                 @error('username')
                                     <small class="text-danger d-block mt-1"><i class="fas fa-times-circle me-1"></i>{{ $message }}</small>
                                 @enderror
@@ -143,3 +143,22 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fname = document.querySelector('input[name="fname"]');
+        const username = document.querySelector('input[name="username"]');
+
+        function updateUsername() {
+            // ดึงชื่อและนามสกุลมาต่อกัน และลบช่องว่างออก
+            const userStr = (fname.value).replace(/\s/g, '');
+            username.value = userStr;
+        }
+
+        if(fname) {
+            fname.addEventListener('input', updateUsername);
+        }
+    });
+</script>
+@endpush

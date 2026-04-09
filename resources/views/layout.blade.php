@@ -233,11 +233,7 @@
                                 <i class="fas fa-users me-1"></i> ข้อมูลพื้นที่ของตนเอง
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-bold {{ Request::is('map') ? 'active' : '' }}" href="{{ route('map') }}">
-                                <i class="fas fa-map-marked-alt me-1"></i> แผนที่จุดเสี่ยง
-                            </a>
-                        </li>
+
                         @if (auth()->user()->role === 'admin')
                             <li class="nav-item">
                                 <a class="nav-link fw-bold {{ Request::is('admin/users*') ? 'active' : '' }}"
@@ -251,41 +247,18 @@
                 <div class="d-flex align-items-center">
                     @auth
                         <!-- Notification Bell -->
-                        <div class="dropdown me-3">
+                        <div class="me-3">
                             <button class="btn btn-link text-white position-relative p-0" type="button" id="noti-dropdown"
-                                data-bs-toggle="dropdown">
+                                data-bs-toggle="modal" data-bs-target="#modalAlertDetails">
                                 <i class="fas fa-bell fs-4"></i>
-                                @if (count($global_notifications) > 0)
+                                @if ($has_alerts)
                                     <span
                                         class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                                         style="font-size: 0.6rem;">
-                                        {{ count($global_notifications) }}
+                                        {{ count($global_overdue) + count($global_today) + count($global_upcoming) }}
                                     </span>
                                 @endif
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end card-3d border-0 shadow-lg mt-2"
-                                style="width: 320px; max-height: 400px; overflow-y: auto;">
-                                <li class="p-3 border-bottom">
-                                    <h6 class="mb-0 fw-bold"><i class="fas fa-bell me-2 mt-1"></i>การแจ้งเตือนทั้งหมด</h6>
-                                </li>
-                                @forelse($global_notifications as $noti)
-                                    <li>
-                                        <a class="dropdown-item p-3 border-bottom d-flex align-items-start gap-3"
-                                            href="{{ $noti['url'] }}">
-                                            <div class="rounded-circle p-2 bg-light text-primary"><i
-                                                    class="fas {{ $noti['icon'] }}"></i></div>
-                                            <div style="white-space: normal;">
-                                                <div class="fw-bold"
-                                                    style="color: {{ $noti['color'] }}; font-size: 0.9rem;">
-                                                    {{ $noti['text'] }}</div>
-                                                <small class="text-muted">คลิกเพื่อดูรายละเอียด</small>
-                                            </div>
-                                        </a>
-                                    </li>
-                                @empty
-                                    <li class="p-4 text-center text-muted">ไม่มีการแจ้งเตือนใหม่</li>
-                                @endforelse
-                            </ul>
                         </div>
 
                         <span class="text-white me-3 fw-bold">👤 {{ auth()->user()->name }}</span>
@@ -307,15 +280,15 @@
         </div>
     </nav>
 
-    <!-- Global Alert Ticker (Integrated with Laravel dynamic data) -->
-    @if (isset($global_notifications) && count($global_notifications) > 0)
+    <!-- Global Alert Ticker -->
+    @if ($has_alerts)
         <div class="container mt-3">
-            <div class="alert-ticker" onclick="document.getElementById('noti-dropdown').click()">
+            <div class="alert-ticker" data-bs-toggle="modal" data-bs-target="#modalAlertDetails" style="cursor:pointer;">
                 <div>
                     <span class="fw-bold text-danger"><i class="fas fa-bell blink"></i> การแจ้งเตือน:</span>
-                    <span>มีรายการต้องติดตาม {{ count($global_notifications) }} รายการ</span>
+                    <span>{{ $global_alert_summary }} (คลิกเพื่อดูรายละเอียด)</span>
                 </div>
-                <span class="badge bg-primary rounded-pill">กดดูที่กระดิ่ง</span>
+                <span class="badge bg-danger rounded-pill">{{ count($global_overdue) + count($global_today) + count($global_upcoming) }}</span>
             </div>
         </div>
     @endif
@@ -428,6 +401,65 @@
             // });
         @endauth
     </script>
+
+    {{-- Global Alert Details Modal --}}
+    @auth
+        <div class="modal fade" id="modalAlertDetails" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white border-0" style="border-radius: 20px 20px 0 0;">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle"></i> รายละเอียดการแจ้งเตือน
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body bg-light">
+                        <h6 class="text-purple fw-bold">1. ผู้ป่วยเกินกำหนดวันนัด</h6>
+                        <ul class="list-group mb-3" id="alert-list-overdue">
+                            @forelse($global_overdue as $p)
+                                <li class="list-group-item text-danger fw-bold">
+                                    {{ $p->prefix }}{{ $p->first_name }} {{ $p->last_name }} ({{ $p->amphoe }})
+                                    - โทร: {{ $p->phone ?: 'ไม่มีข้อมูล' }}
+                                </li>
+                            @empty
+                                <li class="list-group-item text-muted text-center">ไม่มีรายการ</li>
+                            @endforelse
+                        </ul>
+
+                        <h6 class="text-primary fw-bold">2. ผู้ป่วยที่ต้องมาวันนี้</h6>
+                        <ul class="list-group mb-3" id="alert-list-today">
+                            @forelse($global_today as $p)
+                                <li class="list-group-item text-primary fw-bold">
+                                    {{ $p->prefix }}{{ $p->first_name }} {{ $p->last_name }} ({{ $p->amphoe }})
+                                    - โทร: {{ $p->phone ?: 'ไม่มีข้อมูล' }}
+                                </li>
+                            @empty
+                                <li class="list-group-item text-muted text-center">ไม่มีรายการ</li>
+                            @endforelse
+                        </ul>
+
+                        <h6 class="fw-bold" style="color:#e67e22;">3. ผู้ป่วยที่ต้องมาตามนัด (ล่วงหน้า 3 วัน)</h6>
+                        <ul class="list-group" id="alert-list-upcoming">
+                            @forelse($global_upcoming as $p)
+                                <li class="list-group-item text-dark">
+                                    {{ $p->prefix }}{{ $p->first_name }} {{ $p->last_name }} ({{ $p->amphoe }})
+                                    - โทร: {{ $p->phone ?: 'ไม่มีข้อมูล' }}
+                                    @php
+                                        $diff = now()->diffInDays($p->next_appointment_date, false);
+                                    @endphp
+                                    @if ($diff > 0)
+                                        (อีก {{ (int) $diff }} วัน)
+                                    @endif
+                                </li>
+                            @empty
+                                <li class="list-group-item text-muted text-center">ไม่มีรายการ</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endauth
+
     @stack('scripts')
 </body>
 

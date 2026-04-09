@@ -3,13 +3,14 @@
 @section('content')
     <h3 class="fw-bold text-primary mb-4">Dashboard วิเคราะห์ข้อมูลผู้ป่วยระดับจังหวัด</h3>
 
-    <div class="card-3d p-4 mb-4">
+    {{-- Filter Card --}}
+    <div class="card card-3d p-3 mb-4">
         <form action="{{ route('dashboard') }}" method="GET">
-            <div class="row g-3 align-items-end">
+            <div class="row g-2 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label fw-bold"><i class="fas fa-map-marker-alt me-1"></i>พื้นที่ (อำเภอ)</label>
-                    <select name="area" class="form-select border-primary-subtle" onchange="this.form.submit()">
-                        <option value="">-- ทั้งหมดทุกอำเภอ --</option>
+                    <label class="form-label fw-bold">คัดกรองตามอำเภอ</label>
+                    <select name="area" class="form-select" onchange="this.form.submit()">
+                        <option value="">ดูทั้งหมดทั้งจังหวัด</option>
                         @foreach ($areas as $areaName)
                             <option value="{{ $areaName }}" {{ ($areaFilter ?? '') == $areaName ? 'selected' : '' }}>
                                 {{ $areaName }}</option>
@@ -17,74 +18,57 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-bold"><i class="fas fa-layer-group me-1"></i>กลุ่ม SMI-V</label>
-                    <select name="smiv_group" class="form-select border-primary-subtle" onchange="this.form.submit()">
-                        <option value="">-- ทุกกลุ่ม SMI-V --</option>
+                    <label class="form-label fw-bold">ประเภท SMI-V</label>
+                    <select name="smiv_group" class="form-select" onchange="this.form.submit()">
+                        <option value="">ทั้งหมด</option>
                         @foreach ($smivNames as $key => $name)
                             <option value="{{ $key }}" {{ ($smivFilter ?? '') == $key ? 'selected' : '' }}>
-                                {{ $name }}</option>
+                                {{ $key }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>OAS Score
-                        (ความรุนแรง)</label>
-                    <select name="oas_score" class="form-select border-primary-subtle" onchange="this.form.submit()">
-                        <option value="">-- ทุกระดับความรุนแรง --</option>
-                        @foreach ($oasNames as $key => $name)
-                            @if ($key !== 'purple')
-                                <option value="{{ $key }}" {{ ($oasFilter ?? '') == $key ? 'selected' : '' }}>
-                                    {{ $name }}</option>
-                            @endif
-                        @endforeach
+                    <label class="form-label fw-bold">OAS Score</label>
+                    <select name="oas_score" class="form-select" onchange="this.form.submit()">
+                        <option value="">ทั้งหมด</option>
+                        <option value="3" {{ ($oasFilter ?? '') == '3' ? 'selected' : '' }}>ฉุกเฉิน</option>
+                        <option value="2" {{ ($oasFilter ?? '') == '2' ? 'selected' : '' }}>เร่งด่วน</option>
+                        <option value="1" {{ ($oasFilter ?? '') == '1' ? 'selected' : '' }}>กึ่งเร่งด่วน</option>
+                        <option value="0" {{ ($oasFilter ?? '') == '0' ? 'selected' : '' }}>ดูแลตามอาการ</option>
                     </select>
                 </div>
-                <div class="col-md-3 text-end d-flex align-items-center justify-content-end gap-2">
-                    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill shadow-sm"><i
-                            class="fas fa-undo"></i> ล้างค่า</a>
-                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">กรองข้อมูล</button>
+                <div class="col-md-3">
+                    <a href="{{ route('dashboard') }}" class="btn btn-secondary w-100">ล้างค่า</a>
                 </div>
             </div>
         </form>
     </div>
-    @if (isset($oasFilter) || isset($areaFilter) || isset($smivFilter))
-        <div class="alert alert-info py-2 px-3 mb-4 rounded-pill d-inline-block shadow-sm">
-            <small class="fw-bold"><i class="fas fa-filter me-1"></i>คัดกรอง: </small>
-            <!-- Badges removed temporarily to debug syntax error -->
-            @if ($areaFilter)
-                <span class="bg-primary rounded-pill p-1 text-white">{{ $areaFilter }}</span>
-            @endif
-        </div>
-    @endif
 
-    <div class="row g-4 mb-4">
+    {{-- Stats Cards --}}
+    <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card-3d p-4 text-center border-bottom border-primary border-5" style="height: 100%;">
-                <h5 class="text-muted">ผู้ป่วยรวม</h5>
+            <div class="card card-3d p-3 text-center border-bottom border-primary border-5">
+                <h5 class="text-muted">ผู้ป่วยใหม่รวม</h5>
                 <h2 class="fw-bold text-primary">
                     {{ array_sum(array_filter($stats, fn($k) => in_array($k, ['0', '1', '2', '3']), ARRAY_FILTER_USE_KEY)) }}
                 </h2>
-                <small>ราย</small>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card-3d p-4 text-center border-bottom border-success border-5" style="height: 100%;">
-                <h5 class="text-success fw-bold">มาตามนัด</h5>
-                <h2 class="fw-bold text-success">{{ $stats['scheduled'] ?? 0 }}</h2>
-                <small>ราย</small>
+            <div class="card card-3d p-3 text-center border-bottom border-5" style="border-color: #00c6ff !important;">
+                <h5 class="fw-bold" style="color:#00c6ff;">มาตามนัด</h5>
+                <h2 class="fw-bold" style="color:#00c6ff;">{{ $scheduledCount ?? 0 }}</h2>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card-3d p-4 text-center border-bottom border-purple border-5" style="height: 100%;"
-                id="purple-card">
-                <h5 class="fw-bold" style="color: #6f42c1;">ไม่มา/เกินนัด</h5>
-                <h2 class="fw-bold" style="color: #6f42c1;">{{ $stats['purple'] ?? 0 }}</h2>
-                <small>ราย</small>
+            <div class="card card-3d p-3 text-center border-bottom border-5" style="border-color: #8e44ad !important;">
+                <h5 class="fw-bold text-purple">ไม่มา/เกินนัด</h5>
+                <h2 class="fw-bold text-purple">{{ $overdueCount ?? 0 }}</h2>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card-3d p-4 text-center border-bottom border-info border-5" style="height: 100%;">
-                <h6 class="text-muted mb-2">อาการดีขึ้น (Dashboard สรุป)</h6>
+            <div class="card card-3d p-2 text-center border-bottom border-info border-5">
+                <h6 class="text-muted mb-1 mt-1">อาการดีขึ้น (จำลองข้อมูล)</h6>
                 <div class="d-flex justify-content-around mt-2">
                     <div><small class="text-muted">3 เดือน</small>
                         <h5 class="fw-bold text-info">{{ $improvement3m ?? 0 }}%</h5>
@@ -92,112 +76,132 @@
                     <div><small class="text-muted">6 เดือน</small>
                         <h5 class="fw-bold text-info">{{ $improvement6m ?? 0 }}%</h5>
                     </div>
+                    <div><small class="text-muted">1 ปี</small>
+                        <h5 class="fw-bold text-info">{{ $improvement6m ?? 0 }}%</h5>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
+    {{-- Charts --}}
+    <div class="row g-3 mb-4 d-flex align-items-stretch">
         <div class="col-md-6">
-            <div class="card-3d p-4" style="height: 100%;">
-                <h6 class="fw-bold text-center mb-4 text-primary"><i class="fas fa-chart-bar me-2"></i>สัดส่วนประเภทผู้ป่วย
-                    SMI-V</h6>
-                <div style="position: relative; height: 300px; width: 100%;">
+            <div class="card card-3d p-4 h-100">
+                <h6 class="fw-bold text-center mb-3">สัดส่วนประเภท SMI-V</h6>
+                <div style="position: relative; height: 320px;">
                     <canvas id="chartSmiv"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card-3d p-4" style="height: 100%;">
-                <h6 class="fw-bold text-center mb-4 text-primary"><i class="fas fa-chart-pie me-2"></i>ระดับความรุนแรง OAS
-                    Score</h6>
-                <div style="position: relative; height: 300px; width: 100%;">
+            <div class="card card-3d p-4 h-100">
+                <h6 class="fw-bold text-center mb-3">ระดับความรุนแรง OAS Score</h6>
+                <div style="position: relative; height: 320px;">
                     <canvas id="chartOas"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Map Section (Full Width) -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="card-3d p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold text-primary m-0"><i class="fas fa-map-marked-alt me-2"></i>แผนที่เฝ้าระวังจุดเสี่ยง
-                        (Buriram Risk Map)</h5>
-                    <div class="d-flex gap-2 small">
-                        <span class="badge bg-danger">OAS-3</span>
-                        <span class="badge bg-warning text-dark">OAS-2</span>
-                        <span class="badge bg-info text-dark">OAS-1</span>
-                        <span class="badge bg-success">OAS-0</span>
-                        <span class="badge bg-purple">เกินนัด</span>
-                    </div>
-                </div>
-                <div id="map" style="height: 500px; border-radius: 12px; z-index: 1;"></div>
-            </div>
+    {{-- Map --}}
+    <div class="card card-3d p-4 mb-5 bg-light">
+        <h5 class="fw-bold text-primary text-center mb-3">
+            <i class="fas fa-map-marked-alt"></i> แผนที่เฝ้าระวังจุดเสี่ยงและพื้นที่รับผิดชอบ (เตือนเชิงรุก)
+        </h5>
+        <div id="map" style="height: 450px; border-radius: 10px; z-index: 1;"></div>
+        <div class="mt-3 d-flex flex-wrap gap-3 justify-content-center bg-white p-2 rounded shadow-sm border">
+            <small><i class="fas fa-circle" style="color:#ff4d4d"></i> ฉุกเฉิน</small>
+            <small><i class="fas fa-circle" style="color:#ff9800"></i> เร่งด่วน</small>
+            <small><i class="fas fa-circle" style="color:#ffeb3b"></i> กึ่งเร่งด่วน</small>
+            <small><i class="fas fa-circle" style="color:#4caf50"></i> ดูแลตามอาการ</small>
+            <small><i class="fas fa-circle" style="color:#8e44ad"></i> ไม่มา/เกินนัด (กระพริบ)</small>
         </div>
     </div>
+
 @endsection
 
 @push('scripts')
-    <!-- Data for JS Map -->
     @php
-        $patientPoints = [];
         $districtCoords = [
             'เมืองบุรีรัมย์' => [14.993, 103.102],
-            'นางรอง' => [14.629, 102.791],
-            'ประโคนชัย' => [14.605, 103.125],
-            'สตึก' => [15.297, 103.292],
-            'ลำปลายมาศ' => [15.023, 102.834],
-            'ละหานทราย' => [14.412, 102.966],
-            'บ้านกรวด' => [14.419, 103.104],
-            'พุทไธสง' => [15.532, 103.003],
-            'พลับพลาชัย' => [14.739, 103.167],
-            'ห้วยราช' => [14.96, 103.197],
             'กระสัง' => [14.919, 103.256],
             'คูเมือง' => [15.289, 103.016],
             'แคนดง' => [15.302, 103.107],
-            'นาโพธิ์' => [15.667264, 102.929283]
+            'เฉลิมพระเกียรติ' => [14.566, 102.933],
+            'ชำนิ' => [14.808, 102.851],
+            'นางรอง' => [14.629, 102.791],
+            'นาโพธิ์' => [15.631, 102.951],
+            'โนนดินแดง' => [14.301, 102.760],
+            'โนนสุวรรณ' => [14.583, 102.593],
+            'บ้านกรวด' => [14.413, 103.090],
+            'บ้านด่าน' => [15.158, 103.175],
+            'บ้านใหม่ไชยพจน์' => [15.541, 102.825],
+            'ประโคนชัย' => [14.605, 103.125],
+            'ปะคำ' => [14.440, 102.727],
+            'พลับพลาชัย' => [14.811, 103.181],
+            'พุทไธสง' => [15.539, 102.981],
+            'ละหานทราย' => [14.417, 102.868],
+            'ลำปลายมาศ' => [15.025, 102.839],
+            'สตึก' => [15.297, 103.292],
+            'หนองกี่' => [14.671, 102.535],
+            'หนองหงส์' => [14.851, 102.695],
+            'ห้วยราช' => [15.018, 103.208],
         ];
 
-        // Generate map points from actual patient data
-        $patients = \App\Models\Patient::select('id', 'first_name', 'last_name', 'amphoe', 'oas_score', 'status')
-            ->when($areaFilter, fn($q) => $q->where('amphoe', $areaFilter))
-            ->when($smivFilter, fn($q) => $q->whereJsonContains('smiv_group', $smivFilter))
-            ->when($oasFilter, fn($q) => $q->where('oas_score', $oasFilter))
+        $patientPoints = [];
+        $patients = \App\Models\Patient::select(
+            'id',
+            'prefix',
+            'first_name',
+            'last_name',
+            'amphoe',
+            'oas_score',
+            'status',
+            'next_appointment_date',
+        )
+            ->when($areaFilter ?? null, fn($q) => $q->where('amphoe', $areaFilter))
+            ->when($smivFilter ?? null, fn($q) => $q->whereJsonContains('smiv_group', $smivFilter))
+            ->when($oasFilter ?? null, fn($q) => $q->where('oas_score', $oasFilter))
             ->get();
 
         foreach ($patients as $patient) {
             $areaName = $patient->amphoe ?: 'เมืองบุรีรัมย์';
             $baseCoord = $districtCoords[$areaName] ?? [14.99, 103.1];
+            
+            // Prototype logic for overdue: Date in past AND visit_status doesn't mention "มา"
+            $isOverdue = $patient->next_appointment_date && 
+                         $patient->next_appointment_date->isPast() && 
+                         (stripos($patient->visit_status, 'มา') === false);
 
             $patientPoints[] = [
-                'area' => $areaName,
                 'oas' => $patient->oas_score ?? '0',
-                'lat' => $baseCoord[0] + mt_rand(-30, 30) / 1000,
-                'lng' => $baseCoord[1] + mt_rand(-30, 30) / 1000,
+                'lat' => $baseCoord[0] + mt_rand(-50, 50) / 1000,
+                'lng' => $baseCoord[1] + mt_rand(-50, 50) / 1000,
                 'url' => route('patients.show', $patient),
-                'name' => $patient->first_name . ' ' . $patient->last_name,
+                'name' => $patient->prefix . $patient->first_name . ' ' . $patient->last_name,
+                'amphoe' => $areaName,
+                'overdue' => $isOverdue,
+                'next_date' => $patient->next_appointment_date
+                    ? $patient->next_appointment_date->format('d/m/Y')
+                    : '-',
             ];
         }
     @endphp
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // 1. SMI-V Bar Chart
-        const ctxSmiv = document.getElementById('chartSmiv').getContext('2d');
-        new Chart(ctxSmiv, {
+        // ------ SMI-V Bar Chart ------
+        new Chart(document.getElementById('chartSmiv'), {
             type: 'bar',
             data: {
                 labels: @json(array_keys($smivStats)),
                 datasets: [{
-                    label: 'จำนวนผู้ป่วย (ราย)',
+                    label: 'จำนวนผู้ป่วย',
                     data: @json(array_values($smivStats)),
-                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1',
-                        '#ec4899'
-                    ],
-                    borderRadius: 8,
-                    borderWidth: 0
+                    backgroundColor: '#00c6ff',
+                    borderWidth: 0,
+                    borderRadius: 5
                 }]
             },
             options: {
@@ -205,42 +209,39 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { family: 'Prompt', size: 12 }
+                        }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0,0,0,0.05)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                        ticks: { stepSize: 1 }
                     }
                 }
             }
         });
 
-        // 2. OAS Doughnut Chart
-        const ctxOas = document.getElementById('chartOas').getContext('2d');
-        new Chart(ctxOas, {
+        // ------ OAS Doughnut Chart ------
+        new Chart(document.getElementById('chartOas'), {
             type: 'doughnut',
             data: {
-                labels: ['OAS-0 (ปกติ)', 'OAS-1 (เฝ้าระวัง)', 'OAS-2 (เร่งด่วน)', 'OAS-3 (ฉุกเฉิน)', 'เกินนัด'],
+                labels: ['ดูแลตามอาการ', 'กึ่งเร่งด่วน', 'เร่งด่วน', 'ฉุกเฉิน'],
                 datasets: [{
                     data: [
                         {{ $stats['0'] ?? 0 }},
                         {{ $stats['1'] ?? 0 }},
                         {{ $stats['2'] ?? 0 }},
-                        {{ $stats['3'] ?? 0 }},
-                        {{ $stats['purple'] ?? 0 }}
+                        {{ $stats['3'] ?? 0 }}
                     ],
-                    backgroundColor: ['#10b981', '#06b6d4', '#fbbf24', '#ef4444', '#8b5cf6'],
+                    backgroundColor: ['#4caf50', '#ffeb3b', '#ff9800', '#ff4d4d'],
                     borderWidth: 0,
-                    hoverOffset: 20
+                    hoverOffset: 15
                 }]
             },
             options: {
@@ -249,68 +250,89 @@
                 cutout: '70%',
                 plugins: {
                     legend: {
-                        position: 'bottom',
+                        position: 'top',
                         labels: {
                             usePointStyle: true,
-                            padding: 15,
-                            font: {
-                                family: 'Prompt',
-                                size: 11
-                            }
+                            padding: 20,
+                            font: { family: 'Prompt', size: 12 }
                         }
                     }
                 }
             }
         });
 
-        // Map
+        // ------ Leaflet Map ------
         var map = L.map('map').setView([14.993, 103.102], 9);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
 
         var patients = @json($patientPoints);
-        var colors = {
+        var oasColors = {
             '0': '#4caf50',
-            '1': '#2196f3',
+            '1': '#ffeb3b',
             '2': '#ff9800',
-            '3': '#ff4d4d',
-            'purple': '#8e44ad'
-        };
-        var labels = {
-            '0': 'ปกติ (OAS-0)',
-            '1': 'เฝ้าระวัง (OAS-1)',
-            '2': 'เร่งด่วน (OAS-2)',
-            '3': 'ฉุกเฉิน (OAS-3)',
+            '3': '#ff4d4d'
         };
 
         patients.forEach(function(p) {
-            var severityKey = p.oas;
-            var pulseClass = (severityKey === '3') ? 'pulse-red' : '';
+            var mColor = p.overdue ? '#8e44ad' : (oasColors[p.oas] || '#4caf50');
+            var pulseClass = p.overdue ? 'pulse-marker-purple' : (p.oas === '3' ? 'pulse-marker-red' : '');
+
             var iconHtml =
-                `<div style="background:${colors[severityKey] || '#999'}; width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);" class="${pulseClass}"></div>`;
+                `<div style="background-color:${mColor}; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="${pulseClass}"></div>`;
             var customIcon = L.divIcon({
                 html: iconHtml,
                 className: '',
-                iconSize: [14, 14],
-                iconAnchor: [7, 7]
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
             });
+
+            @auth
+            // Logged in: show name and link
+            var popupHtml = `
+                <div class="text-center p-1">
+                    <b class="text-primary d-block mb-1">${p.name}</b>
+                    <small class="text-muted d-block mb-1">${p.amphoe}</small>
+                    <span class="badge mb-2" style="background-color:${mColor}; color:${p.oas==='1'?'#333':'white'};">
+                        ${p.overdue ? 'เกินนัด' : 'OAS-'+p.oas}
+                    </span><br>
+                    <small class="text-muted">นัดถัดไป: ${p.next_date}</small><br>
+                    <a href="${p.url}" class="btn btn-sm btn-outline-primary mt-2 rounded-pill px-3 w-100 fw-bold">ดูรายละเอียด</a>
+                </div>`;
+            @else
+            // Guest: hide name
+            var popupHtml = `
+                <div class="text-center p-1">
+                    <b class="text-primary">ผู้ป่วย (ปกปิดชื่อ)</b><br>
+                    <small class="text-muted">${p.amphoe}</small><br>
+                    <span class="badge mt-1" style="background-color:${mColor}; color:${p.oas==='1'?'#333':'white'};">
+                        ${p.overdue ? 'เกินนัด' : 'OAS-'+p.oas}
+                    </span><br>
+                    <small class="text-muted mt-2 d-block">(เข้าสู่ระบบเพื่อดูรายละเอียด)</small>
+                </div>`;
+            @endauth
+
             L.marker([p.lat, p.lng], {
                     icon: customIcon
                 })
                 .addTo(map)
-                .bindPopup(`
-                <div class="text-center">
-                    <b class="text-primary">${p.area}</b><br>
-                    <span class="badge ${p.oas === '3' ? 'bg-danger' :
-                                       (p.oas === '2' ? 'bg-warning text-dark' :
-                                       (p.oas === '1' ? 'bg-info text-dark' :
-                                       (p.oas === '0' ? 'bg-success' : 'bg-purple')))} mb-2">
-                        ${labels[p.oas] || p.oas}
-                    </span><br>
-                    <a href="${p.url}" class="btn btn-sm btn-outline-primary rounded-pill px-3" style="font-size: 0.8rem;">
-                        <i class="fas fa-users me-1"></i> ดูรายชื่อกลุ่มนี้
-                    </a>
-                </div>
-            `);
+                .bindPopup(popupHtml, {
+                    maxWidth: 200
+                });
         });
+
+        // ------ CSS Pulse Animations for map markers ------
+        (function() {
+            var style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse-red-m { 0%{box-shadow:0 0 0 0 rgba(255,77,77,.7)} 70%{box-shadow:0 0 0 8px rgba(255,77,77,0)} 100%{box-shadow:0 0 0 0 rgba(255,77,77,0)} }
+                @keyframes pulse-purple-m { 0%{box-shadow:0 0 0 0 rgba(142,68,173,.7)} 70%{box-shadow:0 0 0 8px rgba(142,68,173,0)} 100%{box-shadow:0 0 0 0 rgba(142,68,173,0)} }
+                .pulse-marker-red { animation: pulse-red-m 2s infinite; }
+                .pulse-marker-purple { animation: pulse-purple-m 2s infinite; }
+            `;
+            document.head.appendChild(style);
+        })();
     </script>
 @endpush
